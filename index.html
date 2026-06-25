@@ -7,53 +7,40 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { 
-            font-family: "Microsoft YaHei", Arial, sans-serif; 
-            margin: 0; padding: 0; 
-            background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%); 
-            color: #e2e8f0; 
-        }
+        body { font-family: "Microsoft YaHei", Arial, sans-serif; margin:0; padding:0; background: linear-gradient(135deg, #0f172a, #1e2937); color:#e2e8f0; }
         .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
-        .header { text-align: center; padding: 20px; background: rgba(30,41,59,0.95); border-radius: 16px; margin-bottom: 20px; }
-        .main { display: flex; gap: 20px; flex-wrap: wrap; }
-        .left { flex: 1; min-width: 300px; background: #1e2937; padding: 20px; border-radius: 16px; }
-        .center { flex: 2; min-width: 500px; background: #1e2937; padding: 20px; border-radius: 16px; }
-        
-        #qrcode { background: white; padding: 20px; border-radius: 12px; display: inline-block; }
-        .name-list { display: flex; flex-wrap: wrap; gap: 14px; margin: 15px 0; }
-        .name-item { 
-            padding: 14px 26px; background: #334155; border-radius: 14px; 
-            font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .highlight { background: #eab308 !important; color: #1e2937; animation: flash 1s infinite; }
-        @keyframes flash { 50% { opacity: 0.65; } }
-        .violation { background: #b91c1c !important; }
-        
-        button { padding: 14px 32px; margin: 6px; font-size: 18px; border: none; border-radius: 10px; cursor: pointer; }
-        .big-btn { font-size: 26px; padding: 20px; width: 100%; }
-        .countdown { font-size: 170px; text-align: center; color: #ef4444; font-weight: bold; text-shadow: 0 0 40px #ef4444; margin: 20px 0; }
+        .header { text-align:center; padding:20px; background:rgba(30,41,59,0.95); border-radius:16px; margin-bottom:20px; }
+        .main { display:flex; gap:20px; flex-wrap:wrap; }
+        .left { flex:1; min-width:320px; background:#1e2937; padding:20px; border-radius:16px; }
+        .center { flex:2; min-width:500px; background:#1e2937; padding:20px; border-radius:16px; }
+        #qrcode img { max-width:280px; border-radius:12px; }
+        .name-list { display:flex; flex-wrap:wrap; gap:14px; margin:15px 0; }
+        .name-item { padding:14px 26px; background:#334155; border-radius:14px; font-size:24px; }
+        .highlight { background:#eab308 !important; color:#1e2937; animation: flash 1s infinite; }
+        @keyframes flash { 50% { opacity:0.65; } }
+        button { padding:14px 32px; margin:6px; font-size:18px; border:none; border-radius:10px; cursor:pointer; }
+        .big-btn { font-size:26px; padding:20px; width:100%; }
+        .countdown { font-size:160px; text-align:center; color:#ef4444; font-weight:bold; margin:20px 0; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="margin:0;color:#60a5fa;">⚡ 抢答器</h1>
+            <h1 style="margin:0; color:#60a5fa;">⚡ 抢答器</h1>
             <p>选手微信扫码下方二维码 → 输入姓名加入待抢答</p>
         </div>
 
         <div class="main">
             <div class="left">
                 <h2>📱 选手扫码报名</h2>
-                <div style="text-align:center;">
-                    <div id="qrcode"></div>
-                </div>
-                <button onclick="toggleRegistration()" id="regBtn" style="background:#22c55e;width:100%;margin-top:15px;">停止新报名</button>
-                <button onclick="clearAll()" style="background:#ef4444;width:100%;">🧹 清屏（下一组选手）</button>
+                <div id="qrcode" style="text-align:center;"></div>
+                <button onclick="toggleRegistration()" id="regBtn" style="background:#22c55e;width:100%;margin:10px 0;">停止新报名</button>
+                <button onclick="clearAll()" style="background:#ef4444;width:100%;">🧹 清屏（下一组）</button>
             </div>
 
             <div class="center">
                 <h2>🎤 主持人控制</h2>
-                <div style="text-align:center; font-size:28px; margin:15px 0; color:#fbbf24;" id="roundInfo">第 1 轮 - 第 1 题</div>
+                <div id="roundInfo" style="text-align:center;font-size:28px;color:#fbbf24;margin:15px 0;">第 1 轮 - 第 1 题</div>
                 
                 <button onclick="startCountdown()" class="big-btn" style="background:#eab308;color:black;">开始抢答（三二一）</button>
                 <button onclick="nextQuestion()">下一题</button>
@@ -93,18 +80,17 @@
 
         function generateQRCode() {
             const url = window.location.href;
-            // 使用在线二维码 API（微信兼容性最好）
-            const qrImg = document.createElement('img');
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}`;
-            qrImg.style.maxWidth = '280px';
-            document.getElementById('qrcode').appendChild(qrImg);
+            const img = document.createElement('img');
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(url)}`;
+            document.getElementById('qrcode').appendChild(img);
         }
 
         function handlePlayerJoin() {
-            const name = prompt("请输入你的姓名（用于大屏显示）：");
-            if (!name || !name.trim()) return;
-            db.ref('waitList').push({ name: name.trim(), ts: Date.now() });
-            alert("✅ 报名成功！请等待主持人开始抢答。");
+            const name = prompt("请输入你的姓名：");
+            if (name && name.trim()) {
+                db.ref('waitList').push({name: name.trim(), ts: Date.now()});
+                alert("✅ 报名成功！");
+            }
         }
 
         function toggleRegistration() {
@@ -114,26 +100,39 @@
 
         function startCountdown() {
             const cd = document.getElementById('countdown');
-            cd.textContent = "3"; setTimeout(()=>cd.textContent="2",1000);
-            setTimeout(()=>cd.textContent="1",2000);
-            setTimeout(()=>{
+            cd.textContent = "3";
+            setTimeout(() => cd.textContent = "2", 1000);
+            setTimeout(() => cd.textContent = "1", 2000);
+            setTimeout(() => {
                 cd.textContent = "开始抢答！";
-                db.ref('status').set({state:'open', round:currentRound, q:currentQuestion});
-            },3000);
+                db.ref('status').set({state: 'open', round: currentRound, q: currentQuestion});
+            }, 3000);
         }
 
-        function nextQuestion() { currentQuestion = currentQuestion >= 10 ? 1 : currentQuestion+1; updateRound(); resetBuzz(); }
-        function nextRound() { currentRound++; currentQuestion=1; updateRound(); resetBuzz(); }
+        function nextQuestion() {
+            currentQuestion = currentQuestion >= 10 ? 1 : currentQuestion + 1;
+            updateRound();
+            resetBuzz();
+        }
+
+        function nextRound() {
+            currentRound++;
+            currentQuestion = 1;
+            updateRound();
+            resetBuzz();
+        }
+
         function updateRound() {
             document.getElementById('roundInfo').textContent = `第 ${currentRound} 轮 - 第 ${currentQuestion} 题`;
         }
+
         function resetBuzz() {
             db.ref('buzzes').remove();
             document.getElementById('countdown').textContent = "准备就绪";
         }
 
         function clearAll() {
-            if(confirm("确定清空所有名单，准备下一组选手吗？")) {
+            if (confirm("清空所有名单，准备下一组？")) {
                 db.ref('waitList').remove();
                 db.ref('buzzes').remove();
                 currentRound = 1; currentQuestion = 1;
@@ -144,23 +143,11 @@
         window.onload = () => {
             initFirebase();
             generateQRCode();
-            
-            // 实时监听
-            db.ref('waitList').on('value', snap => {
-                const list = document.getElementById('waitList') || document.createElement('div');
-                // 简化版，实际可扩展
-                console.log('待抢答名单更新');
-            });
 
-            db.ref('buzzes').on('value', snap => {
-                // 抢答逻辑简化处理
-            });
-
-            // 检测是否手机扫码
             if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
                 setTimeout(() => {
-                    if (confirm("欢迎！是否立即输入姓名报名？")) handlePlayerJoin();
-                }, 600);
+                    if (confirm("是否立即报名？")) handlePlayerJoin();
+                }, 800);
             }
         };
     </script>
